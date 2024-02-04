@@ -9,33 +9,32 @@
 # 누가 언제 빌려가고 반납했는지 DB에 기록
 
 
-
-# URL 설계는 학번을 기준으로 할 것  jwjung.kro.kr/qr/202345047
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-import tool_csv
-import tool_aes
-import tool_qr
-
-code = 202312345
-name = '카리나'
-phone = '010-1234-5678'
-
-users = {}
+from tools import tool_csv
+from tools import tool_aes
+from tools import tool_qr
 
 app = FastAPI()
 templates = Jinja2Templates(directory="./")
 
 class Input(BaseModel):
-    studentId: str
-    studentName: str
-    studentPhoneNumber: str
-    URL: str
+    studentId: str  # 202345123
+    studentName: str  # 카리나
+    studentPhoneNumber: str  # 010-1234-5678
+    URL: str  # image 
 
 class Verify(BaseModel):
     encrypted: str
+
+app.mount("/page", StaticFiles(directory="page"), name="page")
+
+@app.get("/seihoonlee")
+async def register_get(request: Request):
+    return templates.TemplateResponse("./page/form.html",{"request":request})
 
 @app.get("/register")
 async def register_get(request: Request):
@@ -66,12 +65,16 @@ def register(data : Input):
 
 
 
-@app.post("/info")  # QR코드 내의 AES 암호화된 문자열을 담아 POST 요청
-def verify(data: Verify):
+@app.post("/admin")  # QR코드 내의 AES 암호화된 문자열을 담은 POST 요청이 오면,
+def rq_by_admin(data):
+    # QR Data 복호화 (학번)
     key = tool_aes.get_key("AES.key")
-    output = tool_aes.decrypt(data.encrypted, key)
+    code = tool_aes.decrypt(data, key)
 
-    return output
+    # 해당 학번 CSV 파일 조회
+    mylist = tool_csv.get(code)
+
+    return mylist
 
 
 # CORS 문제 해결, 일단 무시할 것
