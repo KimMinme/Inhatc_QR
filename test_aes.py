@@ -1,8 +1,8 @@
-import aes
+import tool_aes
 
 def test(data):
-    key = aes.get_key("AES.key")
-    output = aes.decrypt(data, key)
+    key = tool_aes.get_key("AES.key")
+    output = tool_aes.decrypt(data, key)
 
     return output
 

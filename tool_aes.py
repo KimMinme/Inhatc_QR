@@ -10,6 +10,8 @@ def get_key(file_name):
     return key.encode('utf-8')
 
 def encrypt(text, key):
+    text = str(text)
+
     backend = default_backend()
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
     encryptor = cipher.encryptor()
@@ -21,6 +23,8 @@ def encrypt(text, key):
     return b64encode(ciphertext).decode()
 
 def decrypt(ciphertext, key):
+    ciphertext = str(ciphertext)
+
     backend = default_backend()
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
     decryptor = cipher.decryptor()
@@ -31,7 +35,7 @@ def decrypt(ciphertext, key):
 
 
 if __name__ == "__main__":
-    text = "Hello AES!"
+    text = "202345123"
     key = get_key("AES.key")
 
     tmp1 = encrypt(text, key)

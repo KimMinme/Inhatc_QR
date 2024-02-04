@@ -15,8 +15,8 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-import make_csv
-import aes
+import tool_csv
+import tool_aes
 
 code = 202312345
 name = '카리나'
@@ -47,14 +47,14 @@ def register(data : Input):
     tmp['전화번호'] = data.phone
 
 
-    make_csv.make(data.code, tmp)
+    tool_csv.make(data.code, tmp)
     print(tmp)
 
     return tmp
 
-@app.post("/verify") 
+@app.post("/info")  # QR코드 내의 AES 암호화된 문자열을 담아 POST 요청
 def verify(data: Verify):
-    key = aes.get_key("AES.key")
-    output = aes.decrypt(data.encrypted, key)
+    key = tool_aes.get_key("AES.key")
+    output = tool_aes.decrypt(data.encrypted, key)
 
     return output
