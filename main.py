@@ -15,6 +15,9 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+import make_csv
+import aes
+
 code = 202312345
 name = '카리나'
 phone = '010-1234-5678'
@@ -29,6 +32,9 @@ class Input(BaseModel):
     name: str
     phone: str
 
+class Verify(BaseModel):
+    encrypted: str
+
 @app.get("/register")
 async def register_get(request: Request):
     return templates.TemplateResponse("register.html",{"request":request})
@@ -36,12 +42,19 @@ async def register_get(request: Request):
 @app.post("/register") 
 def register(data : Input):
     tmp = {}
-    tmp['code'] = data.code
-    tmp['name'] = data.name
-    tmp['phone'] = data.phone
+    tmp['학번'] = data.code
+    tmp['이름'] = data.name
+    tmp['전화번호'] = data.phone
 
 
-    users[data.code] = tmp
-    print(users)
+    make_csv.make(data.code, tmp)
+    print(tmp)
 
-    return users
+    return tmp
+
+@app.post("/verify") 
+def verify(data: Verify):
+    key = aes.get_key("AES.key")
+    output = aes.decrypt(data.encrypted, key)
+
+    return output
