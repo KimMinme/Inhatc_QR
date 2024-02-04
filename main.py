@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 import tool_csv
 import tool_aes
+import tool_qr
 
 code = 202312345
 name = '카리나'
@@ -28,9 +29,10 @@ app = FastAPI()
 templates = Jinja2Templates(directory="./")
 
 class Input(BaseModel):
-    code: int
-    name: str
-    phone: str
+    studentId: str
+    studentName: str
+    studentPhoneNumber: str
+    URL: str
 
 class Verify(BaseModel):
     encrypted: str
@@ -42,15 +44,27 @@ async def register_get(request: Request):
 @app.post("/register") 
 def register(data : Input):
     tmp = {}
-    tmp['학번'] = data.code
-    tmp['이름'] = data.name
-    tmp['전화번호'] = data.phone
-
-
-    tool_csv.make(data.code, tmp)
+    tmp['학번'] = data.studentId
+    tmp['이름'] = data.studentName
+    tmp['전화번호'] = data.studentPhoneNumber
+    tmp['Image'] = data.URL
     print(tmp)
 
+    # CSV 저장 
+    tool_csv.make(data.studentId, tmp)
+
+    # 학번 암호화
+    key = tool_aes.get_key("AES.key")
+    encrypted_code = tool_aes.encrypt(data.studentId, key)
+    print(encrypted_code)
+
+    # QR 코드 생성 (암호화된 학번)
+    tool_qr.make(data.studentId, encrypted_code)
+
     return tmp
+
+
+
 
 @app.post("/info")  # QR코드 내의 AES 암호화된 문자열을 담아 POST 요청
 def verify(data: Verify):
@@ -58,3 +72,15 @@ def verify(data: Verify):
     output = tool_aes.decrypt(data.encrypted, key)
 
     return output
+
+
+# CORS 문제 해결, 일단 무시할 것
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True, # cookie 포함 여부를 설정한다. 기본은 False
+    allow_methods=["*"],    # 허용할 method를 설정할 수 있으며, 기본값은 'GET'이다.
+    allow_headers=["*"],	# 허용할 http header 목록을 설정할 수 있으며 Content-Type, Accept, Accept-Language, Content-Language은 항상 허용된다.
+)

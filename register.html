@@ -12,9 +12,10 @@
         <label for="jsonInput">JSON Data:</label>
         <textarea id="jsonInput" name="jsonInput" rows="10" cols="50">
 {
-    "code": 202345047,
-    "name": "정지원",
-    "phone": "010-2707-5860"
+    "studentId": "202345047",
+    "studentName": "정지원",
+    "studentPhoneNumber": "01027075860",
+    "URL":"이미지가오겠지"
 }
         </textarea>
         <br>
@@ -40,7 +41,7 @@
             }
 
             // Make HTTP POST request
-            fetch('http://127.0.0.1/register', {
+            fetch('http://jwjung.kro.kr/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
