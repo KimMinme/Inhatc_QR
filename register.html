@@ -1,0 +1,64 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST Requester</title>
+</head>
+<body>
+    <h1>POST Requester</h1>
+    <form id="sajuForm">
+        <label for="jsonInput">JSON Data:</label>
+        <textarea id="jsonInput" name="jsonInput" rows="10" cols="50">
+{
+    "code": 202345047,
+    "name": "정지원",
+    "phone": "010-2707-5860"
+}
+        </textarea>
+        <br>
+        <button type="button" onclick="sendRequest()">Send Request</button>
+    </form>
+    <div id="resultContainer">
+        <h2>Result:</h2>
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        function sendRequest() {
+            // Get JSON data from the textarea
+            var jsonInput = document.getElementById('jsonInput').value;
+
+            // Parse JSON data
+            var jsonData;
+            try {
+                jsonData = JSON.parse(jsonInput);
+            } catch (error) {
+                alert('Error parsing JSON: ' + error.message);
+                return;
+            }
+
+            // Make HTTP POST request
+            fetch('http://127.0.0.1/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display result in the result container
+                var resultContainer = document.getElementById('resultContainer');
+                var resultElement = document.getElementById('result');
+                resultElement.textContent = JSON.stringify(data, null, 2);
+                resultContainer.style.display = 'block';
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>
