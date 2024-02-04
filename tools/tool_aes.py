@@ -35,7 +35,7 @@ def decrypt(ciphertext, key):
 
 
 if __name__ == "__main__":
-    text = "202345123"
+    text = "202345047"
     key = get_key("AES.key")
 
     tmp1 = encrypt(text, key)

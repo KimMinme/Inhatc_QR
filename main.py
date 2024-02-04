@@ -9,17 +9,19 @@
 # 누가 언제 빌려가고 반납했는지 DB에 기록
 
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from tools import tool_csv
-from tools import tool_aes
-from tools import tool_qr
+from tools import tool_csv, tool_aes, tool_qr, tool_signature, tool_sms
 
 app = FastAPI()
+app.mount("/page", StaticFiles(directory="page"), name="page")
 templates = Jinja2Templates(directory="./")
+
+airmore_service = tool_sms.init()
 
 class Input(BaseModel):
     studentId: str  # 202345123
@@ -27,45 +29,76 @@ class Input(BaseModel):
     studentPhoneNumber: str  # 010-1234-5678
     URL: str  # image 
 
-class Verify(BaseModel):
-    encrypted: str
-
-app.mount("/page", StaticFiles(directory="page"), name="page")
-
-@app.get("/seihoonlee")
-async def register_get(request: Request):
-    return templates.TemplateResponse("./page/form.html",{"request":request})
 
 @app.get("/register")
 async def register_get(request: Request):
-    return templates.TemplateResponse("register.html",{"request":request})
+    return templates.TemplateResponse("./page/form.html",{"request":request})
+
+# @app.get("/register")
+# async def register_get(request: Request):
+#     return templates.TemplateResponse("register.html",{"request":request})
 
 @app.post("/register") 
 def register(data : Input):
-    tmp = {}
-    tmp['학번'] = data.studentId
-    tmp['이름'] = data.studentName
-    tmp['전화번호'] = data.studentPhoneNumber
-    tmp['Image'] = data.URL
-    print(tmp)
+    if len(data.studentId) == 9 and len(data.studentPhoneNumber) == 11:
+        # CSV 저장 
+        tool_csv.make(data.studentId, data)
 
-    # CSV 저장 
-    tool_csv.make(data.studentId, tmp)
+        # Signature 저장
+        tool_signature.make(data.studentId, data.URL)
 
-    # 학번 암호화
-    key = tool_aes.get_key("AES.key")
-    encrypted_code = tool_aes.encrypt(data.studentId, key)
-    print(encrypted_code)
+        # 학번 암호화
+        key = tool_aes.get_key("AES.key")
+        encrypted_code = tool_aes.encrypt(data.studentId, key)
+        print(encrypted_code)
 
-    # QR 코드 생성 (암호화된 학번)
-    tool_qr.make(data.studentId, encrypted_code)
+        # QR 코드 생성 (암호화된 학번)
+        tool_qr.make(data.studentId, encrypted_code)
 
-    return tmp
+        private_url = "http://jwjung.kro.kr/qr/show/?data=" + encrypted_code
+        print(private_url)
+
+        # 문자메시지 전송
+        # is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, private_url)
+        # print(is_sended)
+
+        return data.model_dump_json()
+    else:
+        return "Invalid Student ID"
+
+
+@app.get("/qr/show/")
+async def show(data: str = "0"):
+    if len(data) == 24:
+        try:
+            key = tool_aes.get_key("AES.key")
+            student_id = tool_aes.decrypt(data, key)
+
+            image_path = "./qr/" + str(student_id) + ".png"
+
+            # FileResponse를 사용하여 이미지 파일을 반환합니다.
+            return FileResponse(image_path, media_type="image/png")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    else:
+        return "Invalid Student ID"
 
 
 
+@app.get("/qr/verify/")
+async def getRealInfo(data: str = "0"):
+    if data == "0":
+        return "Not Found"
+    else:
+        key = tool_aes.get_key("AES.key")
+        code = tool_aes.decrypt(data, key)
 
-@app.post("/admin")  # QR코드 내의 AES 암호화된 문자열을 담은 POST 요청이 오면,
+        mylist = tool_csv.get(code)
+
+        return mylist
+
+
+@app.post("/admin")  # QR코드 내의 AES 암호화된 문자열을 담은 POST 요청이 오면 //아직 사용안함
 def rq_by_admin(data):
     # QR Data 복호화 (학번)
     key = tool_aes.get_key("AES.key")

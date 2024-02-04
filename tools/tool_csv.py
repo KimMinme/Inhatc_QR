@@ -8,7 +8,7 @@ def make(file_name, data):
         # writer.writerow(["거래일시", "의뢰인/수취인", "입금금액"])
         
         # 데이터 쓰기
-        writer.writerow([data['학번'], data['이름'], data['전화번호']])
+        writer.writerow([data.studentId, data.studentName, data.studentPhoneNumber])
 
 def get(file_name):
     with open("./csv/" + str(file_name) + ".csv", mode='r', newline='', encoding='utf-8-sig') as file:
