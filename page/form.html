@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="form.css">
+    <title>Inhatc_QR</title>
+</head>
+<body>
+    <form action="URL" method="post">
+        <div class="element" id="inputs">
+            <div class="input">
+                학번<input type="text" name="student_id" id="student_id">
+            </div>
+            <div class="input">
+                이름<input type="text" name="student_name" id="student_name">
+            </div>
+            <div class="input">
+                전화번호<input type="text" name="student_phone_number" id="student_phone_number">
+            </div>
+        </div>
+        <div class="element" id="content">
+            분실 시의 책임은 본인에게 있습니다.
+            동의하신다면, 아래에 싸인해 주세요.
+        </div>
+        <div class="element" id="signature">
+            <canvas id="signature_pad"></canvas>
+            <button type="button" id="clear">초기화</button>
+        </div>
+        <div class="element" id="submit">
+            <button id="submit_button" type="button">제출</button>
+        </div>
+    </form>
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="signature.js"></script>
