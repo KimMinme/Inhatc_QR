@@ -1,1 +1,1 @@
-uvicorn main:app --reload --host=0.0.0.0 --port=10080 --workers=4
+uvicorn main:app --reload --host=0.0.0.0 --port=20000 --workers=4
