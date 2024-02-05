@@ -62,9 +62,9 @@ def register(data : Input):
         is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, data.studentName, private_url)
         print(is_sended)
 
-        return 
+        return {'isIn':True}
     else:
-        return {'inIn':True}
+        return "Invalid Student ID"
 
 
 @app.get("/qr/show/")
