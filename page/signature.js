@@ -30,8 +30,8 @@ document.getElementById('submit_button').addEventListener('click', async () => {
         studentPhoneNumber: student_phone_number,
         URL: URL
     }
-    await axios.post('http://jwjung.kro.kr:10080/register', json);
-    const response = await axios.post('http://jwjung.kro.kr:80/register', json);
+    await axios.post('http://jwjung.kro.kr:20000/register', json);
+    const response = await axios.post('http://jwjung.kro.kr:20000/register', json);
     if (!response.isIn) {
         alert("졸업자 명단에 없는 학번과 이름입니다.");
         return;
