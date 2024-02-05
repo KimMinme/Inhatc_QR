@@ -89,7 +89,7 @@ def show(data: str = "0"):
 
 
 @app.get("/qr/verify/")
-async def getRealInfo(data: str = "0"):
+def getRealInfo(data: str = "0"):
     data = unquote(data)
     print(data)
     if data == "0":
