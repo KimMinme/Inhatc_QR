@@ -16,12 +16,13 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from tools import tool_csv, tool_aes, tool_qr, tool_signature, tool_sms
+from urllib.parse import quote, unquote
 
 app = FastAPI()
 app.mount("/page", StaticFiles(directory="page"), name="page")
 templates = Jinja2Templates(directory="./")
 
-airmore_service = tool_sms.init()
+# airmore_service = tool_sms.init()
 
 class Input(BaseModel):
     studentId: str  # 202345123
@@ -53,12 +54,14 @@ def register(data : Input):
         print(encrypted_code)
 
         # QR 코드 생성 (암호화된 학번)
-        tool_qr.make(data.studentId, encrypted_code)
-
-        private_url = "http://jwjung.kro.kr:20000/qr/show/?data=" + encrypted_code
-        print(private_url)
+        url_safe_code = quote(encrypted_code)
+        veryfy_url = "http://jwjung.kro.kr:20000/qr/verify/?data=" + url_safe_code
+        tool_qr.make(data.studentId, veryfy_url)
 
         # 문자메시지 전송
+        private_url = "http://jwjung.kro.kr:20000/qr/show/?data=" + url_safe_code
+        print(private_url)
+
         is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, data.studentName, private_url)
         print(is_sended)
 
@@ -68,7 +71,8 @@ def register(data : Input):
 
 
 @app.get("/qr/show/")
-async def show(data: str = "0"):
+def show(data: str = "0"):
+    data = unquote(data)
     if len(data) == 24:
         try:
             key = tool_aes.get_key("AES.key")
@@ -86,6 +90,8 @@ async def show(data: str = "0"):
 
 @app.get("/qr/verify/")
 async def getRealInfo(data: str = "0"):
+    data = unquote(data)
+    print(data)
     if data == "0":
         return "Not Found"
     else:
