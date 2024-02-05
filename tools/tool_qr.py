@@ -1,5 +1,5 @@
 import qrcode
 
-def make(file_name, data):
-    myQR = qrcode.make("http://jwjung.kro.kr:20000/qr/verify/?data=" + str(data))
+def make(file_name, url):
+    myQR = qrcode.make(str(url))
     myQR.save("./qr/" + str(file_name) + ".png")
