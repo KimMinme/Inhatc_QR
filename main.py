@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from tools import tool_csv, tool_aes, tool_qr, tool_signature, tool_sms
+from urllib.parse import quote, unquote
 
 app = FastAPI()
 app.mount("/page", StaticFiles(directory="page"), name="page")
@@ -51,11 +52,12 @@ def register(data : Input):
         key = tool_aes.get_key("AES.key")
         encrypted_code = tool_aes.encrypt(data.studentId, key)
         print(encrypted_code)
+        url_safe_code = quote(encrypted_code)
 
         # QR 코드 생성 (암호화된 학번)
-        tool_qr.make(data.studentId, encrypted_code)
+        tool_qr.make(data.studentId, url_safe_code)
 
-        private_url = "http://jwjung.kro.kr:20000/qr/show/?data=" + encrypted_code
+        private_url = "http://jwjung.kro.kr:20000/qr/show/?data=" + url_safe_code
         print(private_url)
 
         # 문자메시지 전송
@@ -68,7 +70,8 @@ def register(data : Input):
 
 
 @app.get("/qr/show/")
-async def show(data: str = "0"):
+async def show(url_safe_code: str = "0"):
+    data = unquote(url_safe_code)
     if len(data) == 24:
         try:
             key = tool_aes.get_key("AES.key")
@@ -85,10 +88,11 @@ async def show(data: str = "0"):
 
 
 @app.get("/qr/verify/")
-async def getRealInfo(data: str = "0"):
-    if data == "0":
+async def getRealInfo(url_safe_data: str = "0"):
+    if url_safe_data == "0":
         return "Not Found"
     else:
+        data = unquote(url_safe_data)
         key = tool_aes.get_key("AES.key")
         code = tool_aes.decrypt(data, key)
 
@@ -101,7 +105,7 @@ async def getRealInfo(data: str = "0"):
 def rq_by_admin(data):
     # QR Data 복호화 (학번)
     key = tool_aes.get_key("AES.key")
-    code = tool_aes.decrypt(data, key)
+    code = tool_aes.decrypt(unquote(data), key)
 
     # 해당 학번 CSV 파일 조회
     mylist = tool_csv.get(code)
