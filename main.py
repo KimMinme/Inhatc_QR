@@ -55,16 +55,16 @@ def register(data : Input):
         # QR 코드 생성 (암호화된 학번)
         tool_qr.make(data.studentId, encrypted_code)
 
-        private_url = "http://jwjung.kro.kr/qr/show/?data=" + encrypted_code
+        private_url = "http://jwjung.kro.kr:20000/qr/show/?data=" + encrypted_code
         print(private_url)
 
         # 문자메시지 전송
         is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, data.studentName, private_url)
         print(is_sended)
 
-        return data.model_dump_json()
+        return 
     else:
-        return "Invalid Student ID"
+        return {'inIn':True}
 
 
 @app.get("/qr/show/")
