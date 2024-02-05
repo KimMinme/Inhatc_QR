@@ -59,8 +59,8 @@ def register(data : Input):
         print(private_url)
 
         # 문자메시지 전송
-        # is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, private_url)
-        # print(is_sended)
+        is_sended = tool_sms.send(airmore_service, data.studentPhoneNumber, data.studentName, private_url)
+        print(is_sended)
 
         return data.model_dump_json()
     else:
@@ -76,7 +76,6 @@ async def show(data: str = "0"):
 
             image_path = "./qr/" + str(student_id) + ".png"
 
-            # FileResponse를 사용하여 이미지 파일을 반환합니다.
             return FileResponse(image_path, media_type="image/png")
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

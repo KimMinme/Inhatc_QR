@@ -18,7 +18,7 @@ document.getElementById('submit_button').addEventListener('click', async () => {
         studentPhoneNumber: student_phone_number,
         URL: URL
     }
-    await axios.post('http://jwjung.kro.kr:80/register', json);
+    await axios.post('http://jwjung.kro.kr:8080/register', json);
 
     alert("제출되었습니다.");
     document.querySelector('form').reset();
