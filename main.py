@@ -22,7 +22,7 @@ app = FastAPI()
 app.mount("/page", StaticFiles(directory="page"), name="page")
 templates = Jinja2Templates(directory="./")
 
-# airmore_service = tool_sms.init()
+airmore_service = tool_sms.init()
 
 class Input(BaseModel):
     studentId: str  # 202345123
