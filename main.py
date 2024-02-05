@@ -72,7 +72,7 @@ def register(data : Input):
 @app.get("/qr/show/")
 async def show(url_safe_code: str = "0"):
     data = unquote(url_safe_code)
-    if len(data) == 24:
+    if len(data) > 20:
         try:
             key = tool_aes.get_key("AES.key")
             student_id = tool_aes.decrypt(data, key)
