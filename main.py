@@ -126,7 +126,8 @@ def rental_(request: Request, data: str = "0"):
         return "Not Found"
     
     cookies = request.cookies
-    if not cookies:
+    print(cookies)
+    if not cookies["SESSIONID"]:
         return {"Result":"허가받지 않은 사용자의 접근입니다."}
 
     key = tool_aes.get_key("AES.key")
