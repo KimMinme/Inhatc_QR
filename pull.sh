@@ -1,0 +1,1 @@
+git pull https://github.com/Team-has-been-never-seen-in-the-galaxy/Inhatc_QR.git
