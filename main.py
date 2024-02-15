@@ -9,7 +9,7 @@
 # 누가 언제 빌려가고 반납했는지 DB에 기록
 
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -122,16 +122,16 @@ def getRealInfo(data: str = "0"):
 # ---------------------------------------------------------------------------------------
 
 @app.get("/qr/rental")
-def rental_(request: Request, data: str = "0"):
+def rental_(request: Request, response: Response, data: str = "0"):
     if data == "0":
         return "Not Found"
     
     cookies = request.cookies
+    response.headers["Content-Type"] = "application/json;charset utf-8"
     try:
         print(cookies['SESSIONID'])
     except:
-        output = {"Result":"허가받지 않은 사용자의 접근입니다."}
-        return JSONResponse(content=output, charset="utf-8")
+        return {"Result":"허가받지 않은 사용자의 접근입니다."}
 
     key = tool_aes.get_key("AES.key")
     code = tool_aes.decrypt(data, key)
@@ -149,8 +149,7 @@ def rental_(request: Request, data: str = "0"):
             tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템", current_time, mylist[0], mylist[1])
 
         print(str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다.")
-        output = {'Result':str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다."}
-        return JSONResponse(content=output, charset="utf-8")
+        return {'Result':str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다."}
     
     elif cookies['SESSIONID'] in sessions_return:
         users.remove(code)
@@ -162,8 +161,7 @@ def rental_(request: Request, data: str = "0"):
             tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템", current_time, mylist[0], mylist[1])
 
         print(str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다.")
-        output = {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
-        return JSONResponse(content=output, charset="utf-8")
+        return {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
     
 
 @app.get("/qr/rental/users")
