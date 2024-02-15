@@ -78,7 +78,7 @@ def register(data : Input):
 
 
 @app.get("/qr/show/")
-def show(data: str = "0"):
+def show(data:str = "0"):
     data = unquote(data)
     if len(data) == 24:
         try:
@@ -109,24 +109,52 @@ def getRealInfo(data: str = "0"):
 
         return mylist
 
+# ---------------------------------------------------------------------------------------
 
 @app.post("/admin/rent")
-def rent(data:str):
+def rent(data:str = 0):
+    if data == "0":
+        return "Not Found"
     key = tool_aes.get_key("AES.key")
     code = tool_aes.decrypt(data, key)
 
     mylist = tool_csv.get(code)
-
-    current_time = datetime.now()
-    current_time.strftime("%Y-%m-%d %H:%M:%S") # 현재시간
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # 현재시간
 
     if code[0:4] == '2023':
         category = '컴퓨터시스템공학'
-        tool_csv.ttt("2024 학위수여식 학위복 대여_컴퓨터시스템공학", current_time, mylist[:2])
+        tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
     else:
         category = "컴퓨터시스템"
+        tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템", current_time, mylist[0], mylist[1])
 
-    tool_csv.ttt("2024 학위수여식 학위복 대여자 명단", current_time, )
+
+@app.post("/admin/return")
+def rent(data:str = 0):
+    if data == "0":
+        return "Not Found"
+    
+    key = tool_aes.get_key("AES.key")
+    code = tool_aes.decrypt(data, key)
+
+    mylist = tool_csv.get(code)
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # 현재시간
+
+    if code[0:4] == '2023':
+        category = '컴퓨터시스템공학'
+        tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
+    else:
+        category = "컴퓨터시스템"
+        tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템", current_time, mylist[0], mylist[1])
+
+
+@app.post("/admin/password")
+def password(data:str = 0):
+    if data == '1111':
+        return "http://www.naver.com"
+    else:
+        return "비밀번호가 일치하지 않습니다."
+
 
 
 @app.get("/admin/rental")
