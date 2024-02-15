@@ -19,7 +19,7 @@ def get(file_name):
 def get_graduates(file_name_1, file_name_2):
     mylist = []
 
-    with open("./" + str(file_name_1) + ".csv", mode='r', newline='') as file:
+    with open("./" + str(file_name_1) + ".csv", mode='r', newline='', encoding='cp949') as file:
         mydict = {}
         reader = csv.reader(file)  # Iterator
 
@@ -29,7 +29,7 @@ def get_graduates(file_name_1, file_name_2):
         for row in reader:
             mylist.append(row[0])
 
-    with open("./" + str(file_name_2) + ".csv", mode='r', newline='') as file:
+    with open("./" + str(file_name_2) + ".csv", mode='r', newline='', encoding='cp949') as file:
         reader = csv.reader(file)  # Iterator
         for row in reader:
             mylist.append(row[0])
