@@ -131,7 +131,9 @@ def rental_(request: Request, response: Response, data: str = "0"):
     try:
         print(cookies['SESSIONID'])
     except:
-        return {"Result":"허가받지 않은 사용자의 접근입니다."}
+        data = {"Result":"허가받지 않은 사용자의 접근입니다."}
+        response = Response(content=data, media_type="application/json; charset=utf-8")
+        return response
 
     key = tool_aes.get_key("AES.key")
     code = tool_aes.decrypt(data, key)
