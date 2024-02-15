@@ -161,6 +161,11 @@ def rental_(request: Request, data: str = "0"):
 
         print(str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다.")
         return {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
+    
+
+@app.get("/qr/rental/users")
+def users_(data: str = "0"):
+    return users
 
 
 # @app.get("/admin/")
