@@ -148,7 +148,8 @@ def rental_(request: Request, data: str = "0"):
             tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템", current_time, mylist[0], mylist[1])
 
         print(str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다.")
-        return {'Result':str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다."}
+        output = {'Result':str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다."}
+        return JSONResponse(content=output, charset="utf-8")
     
     elif cookies['SESSIONID'] in sessions_return:
         users.remove(code)
@@ -160,7 +161,8 @@ def rental_(request: Request, data: str = "0"):
             tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템", current_time, mylist[0], mylist[1])
 
         print(str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다.")
-        return {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
+        output = {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
+        return JSONResponse(content=output, charset="utf-8")
     
 
 @app.get("/qr/rental/users")
