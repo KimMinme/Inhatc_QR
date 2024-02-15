@@ -15,7 +15,7 @@ body {
     font-size: 30px;
 }
 
-div.text {
+input[type="text"] {
     display: block;
     width: 250px;
     margin-top: 15px;
