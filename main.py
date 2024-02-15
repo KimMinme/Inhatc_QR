@@ -151,9 +151,9 @@ def rent(data:str = 0):
 @app.post("/admin/password")
 def password(data:str = 0):
     if data == '1111':
-        return "http://www.naver.com"
+        return {'url':"http://www.naver.com"}
     else:
-        return "비밀번호가 일치하지 않습니다."
+        return {'url':"notFound"}
 
 
 
