@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR</title>
+    <style>
+        #box {
+            display: flex;
+        }
+        .result {
+            justify-self: center;
+            font-size: 30px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="return" width="600px"></div>
+    <div id="box">
+        <div class="result" id="result"></div>
+        <div class="result" id="name"></div>
+        <div class="result" id="student_id"></div>
+    </div>
+</body>
+</html>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script>
+    const html5QrCode = new Html5Qrcode(/* element id */ "return");
+
+    Html5Qrcode.getCameras().then(devices => {
+        let cameraId = devices[0].id;
+
+        html5QrCode.start(
+            cameraId,
+            {
+                fps: 10,    // Optional, frame per seconds for qr code scanning
+                qrbox: { width: 250, height: 250 }  // Optional, if you want bounded box UI
+            },
+            async (decodedText, decodedResult) => {
+                const result = document.getElementById('result').innerHTML;
+                const name = document.getElementById('name').innerHTML;
+                const student_id = document.getElementById('student_id').innerHTML;
+                
+                result = `잠시만 기다려 주십시오... ... .`;
+
+                html5QrCode.stop();
+
+                try {
+                    const userData = await axios.post('adress', {
+                        decodedText: decodedText
+                    });
+
+                    if (userData.name) {
+                        result = `${new Date()} 반납 처리 되었습니다.`;
+                        name = `이름: ${userData.name}`;
+                        student_id = `학번: ${student_id}`;
+
+                        await setTimeout(() => {
+                            result.innerHTML = ``;
+                            name.innerHTML = ``;
+                            student_id = ``;
+                        }, 1500);
+                    } else {
+                        result = `유효하지 못한 QR 코드입니다.`;
+                            await setTimeout(() => {
+                            result.innerHTML = ``;
+                            name.innerHTML = ``;
+                            student_id = ``;
+                        }, 1000);
+                    }
+                } catch (err) {
+                    result = `유효하지 못한 QR 코드입니다.`;
+                    await setTimeout(() => {
+                        result.innerHTML = ``;
+                        name.innerHTML = ``;
+                        student_id = ``;
+                    }, 1000);
+                }
+
+                html5QrCode.start();
+            },
+            (errorMessage) => {
+                // parse error, ignore it.
+            })
+            .catch((err) => {
+                // Start failed, handle it.
+        });
+    });
+</script>
