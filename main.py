@@ -12,13 +12,14 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 from tools import tool_csv, tool_aes, tool_qr, tool_signature, tool_sms
 from urllib.parse import quote, unquote
 
 from datetime import datetime
+from uuid import UUID, uuid4
 
 app = FastAPI()
 app.mount("/page", StaticFiles(directory="page"), name="page")
@@ -27,6 +28,10 @@ templates = Jinja2Templates(directory="./")
 airmore_service = tool_sms.init()
 
 graduates = tool_csv.get_graduates("전공심화 csv", "졸업자 csv")
+
+sessions_rental = []  # 발급된 렌탈 관리자 세션
+sessions_return = []  # 발급된 반납 관리자 세션
+users = []  # 현재 대여중인 사람 명단
 
 class Input(BaseModel):
     studentId: str  # 202345123
@@ -65,7 +70,7 @@ def register(data : Input):
 
         # QR 코드 생성 (암호화된 학번)
         url_safe_code = quote(encrypted_code)
-        veryfy_url = "http://jwjung.kro.kr:20000/qr/verify/?data=" + url_safe_code
+        veryfy_url = "http://jwjung.kro.kr:20000/qr/rental/?data=" + url_safe_code
         tool_qr.make(data.studentId, veryfy_url)
 
         # 문자메시지 전송
@@ -114,60 +119,73 @@ def getRealInfo(data: str = "0"):
 
 # ---------------------------------------------------------------------------------------
 
-@app.post("/admin/rent")
-def rent(data:str = 0):
-    if data == "0":
-        return "Not Found"
-    key = tool_aes.get_key("AES.key")
-    code = tool_aes.decrypt(data, key)
-
-    mylist = tool_csv.get(code)
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # 현재시간
-
-    if code[0:4] == '2023':
-        category = '컴퓨터시스템공학'
-        tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
-    else:
-        category = "컴퓨터시스템"
-        tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템", current_time, mylist[0], mylist[1])
-
-
-@app.post("/admin/return")
-def rent(data:str = 0):
+@app.get("/qr/rental")
+def rental_(request: Request, data: str = "0"):
     if data == "0":
         return "Not Found"
     
+    cookies = request.cookies
+    if not cookies:
+        return {"Result":"허가받지 않은 사용자의 접근입니다."}
+
     key = tool_aes.get_key("AES.key")
     code = tool_aes.decrypt(data, key)
 
     mylist = tool_csv.get(code)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # 현재시간
 
-    if code[0:4] == '2023':
-        category = '컴퓨터시스템공학'
-        tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
-    else:
-        category = "컴퓨터시스템"
-        tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템", current_time, mylist[0], mylist[1])
+    if cookies['SESSIONID'] in sessions_rental:
+        users.append(code)
+        if code[0:4] == '2023':
+            category = '컴퓨터시스템공학'
+            tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
+        else:
+            category = "컴퓨터시스템"
+            tool_csv.append("2024 학위수여식 학위복 대여_컴퓨터시스템", current_time, mylist[0], mylist[1])
+
+        print(str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다.")
+        return {'Result':str(mylist[1]) +" 님의 학위복 대여가 시작되었습니다."}
+    
+    elif cookies['SESSIONID'] in sessions_return:
+        users.remove(code)
+        if code[0:4] == '2023':
+            category = '컴퓨터시스템공학'
+            tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템공학", current_time, mylist[0], mylist[1])
+        else:
+            category = "컴퓨터시스템"
+            tool_csv.append("2024 학위수여식 학위복 반납_컴퓨터시스템", current_time, mylist[0], mylist[1])
+
+        print(str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다.")
+        return {'Result':str(mylist[1]) +" 님의 학위복 반납 처리를 완료했습니다."}
 
 
-@app.post("/admin/password")
-def password(data:Password):
-    print(data)
-    if data.password == '1111':
-        return {'url':"http://www.naver.com"}
-    else:
-        return {'url':"notFound"}
+# @app.get("/admin/")
+# def password(data: str = "0"):
+#     print(data)
+#     if data.password == '1111':
+#         return {'url':"http://jwjung.kro.kr/admin/rental/코드"}
+#     else:
+#         return {'url':"notFound"}
 
+@app.get("/session/rental")  # 렌탈 관리자 세션 발급
+def password(data: str = "0"):
+    session_id = str(uuid4())
+    sessions_rental.append(session_id)
+    content = {'SESSIONID': session_id}
+    response = JSONResponse(content=content)
+    response.set_cookie(key="SESSIONID", value=session_id, path=None, domain=None, max_age=43200, expires=43200)
 
+    return response
 
-@app.get("/admin/rental")
-def rental_(request: Request):
-    return templates.TemplateResponse("./admin_page/rental.html",{"request":request})
+@app.get("/session/return")  # 반납 관리자 세션 발급
+def password(data: str = "0"):
+    session_id = str(uuid4())
+    sessions_return.append(session_id)
+    content = {'SESSIONID': session_id}
+    response = JSONResponse(content=content)
+    response.set_cookie(key="SESSIONID", value=session_id, path=None, domain=None, max_age=43200, expires=43200)
 
-@app.get("/admin/return")
-def return_(request: Request):
-    return templates.TemplateResponse("./admin_page/return.html",{"request":request})
+    return response
 
 
 
