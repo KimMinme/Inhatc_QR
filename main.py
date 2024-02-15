@@ -29,7 +29,7 @@ airmore_service = tool_sms.init()
 
 graduates = tool_csv.get_graduates("전공심화 csv", "졸업자 csv")
 graduates.append('202345123')  # admin
-graduates.append('202346123')
+graduates.append('201845123')
 
 sessions_rental = []  # 발급된 렌탈 관리자 세션
 sessions_return = []  # 발급된 반납 관리자 세션
