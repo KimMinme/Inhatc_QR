@@ -28,7 +28,7 @@ templates = Jinja2Templates(directory="./")
 airmore_service = tool_sms.init()
 
 graduates = tool_csv.get_graduates("전공심화 csv", "졸업자 csv")
-graduates.append('202345123')  # admin
+graduates.append('202345123', '202346123')  # admin
 
 sessions_rental = []  # 발급된 렌탈 관리자 세션
 sessions_return = []  # 발급된 반납 관리자 세션
@@ -126,9 +126,10 @@ def rental_(request: Request, data: str = "0"):
         return "Not Found"
     
     cookies = request.cookies
-    print(cookies)
-    # if not cookies["SESSIONID"]:
-    #     return {"Result":"허가받지 않은 사용자의 접근입니다."}
+    try:
+        print(cookies['SESSIONID'])
+    except:
+        return {"Result":"허가받지 않은 사용자의 접근입니다."}
 
     key = tool_aes.get_key("AES.key")
     code = tool_aes.decrypt(data, key)
