@@ -34,6 +34,9 @@ class Input(BaseModel):
     studentPhoneNumber: str  # 010-1234-5678
     URL: str  # image 
 
+class Password(BaseModel):
+    password: str
+
 
 @app.get("/register")
 async def register_get(request: Request):
@@ -149,8 +152,9 @@ def rent(data:str = 0):
 
 
 @app.post("/admin/password")
-def password(data:str = 0):
-    if data == '1111':
+def password(data:Password):
+    print(data)
+    if data.password == '1111':
         return {'url':"http://www.naver.com"}
     else:
         return {'url':"notFound"}
