@@ -175,7 +175,7 @@ def password(data: str = "0"):
     sessions_rental.append(session_id)
     content = {'SESSIONID': session_id}
     response = JSONResponse(content=content)
-    response.set_cookie(key="SESSIONID", value=session_id, path=None, domain=None, max_age=43200, expires=43200)
+    response.set_cookie(key="SESSIONID", value=session_id, path='/qr/rental', domain=None, max_age=43200, expires=43200)
 
     return response
 
@@ -185,7 +185,7 @@ def password(data: str = "0"):
     sessions_return.append(session_id)
     content = {'SESSIONID': session_id}
     response = JSONResponse(content=content)
-    response.set_cookie(key="SESSIONID", value=session_id, path=None, domain=None, max_age=43200, expires=43200)
+    response.set_cookie(key="SESSIONID", value=session_id, path='/qr/rental', domain=None, max_age=43200, expires=43200)
 
     return response
 
