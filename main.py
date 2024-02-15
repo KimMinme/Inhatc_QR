@@ -18,11 +18,15 @@ from pydantic import BaseModel
 from tools import tool_csv, tool_aes, tool_qr, tool_signature, tool_sms
 from urllib.parse import quote, unquote
 
+from datetime import datetime
+
 app = FastAPI()
 app.mount("/page", StaticFiles(directory="page"), name="page")
 templates = Jinja2Templates(directory="./")
 
 airmore_service = tool_sms.init()
+
+graduates = tool_csv.get_graduates("전공심화 csv", "졸업자 csv")
 
 class Input(BaseModel):
     studentId: str  # 202345123
@@ -42,6 +46,9 @@ async def register_get(request: Request):
 @app.post("/register") 
 def register(data : Input):
     if len(data.studentId) == 9 and len(data.studentPhoneNumber) == 11:
+        # 졸업자 명단에 있는지 확인
+        if not(data.studentId in graduates):
+            return {'isIn':False}
         # CSV 저장 
         tool_csv.make(data.studentId, data)
 
@@ -101,6 +108,38 @@ def getRealInfo(data: str = "0"):
         mylist = tool_csv.get(code)
 
         return mylist
+
+
+@app.post("/admin/rent")
+def rent(data:str):
+    key = tool_aes.get_key("AES.key")
+    code = tool_aes.decrypt(data, key)
+
+    mylist = tool_csv.get(code)
+
+    current_time = datetime.now()
+    current_time.strftime("%Y-%m-%d %H:%M:%S") # 현재시간
+
+    if code[0:4] == '2023':
+        category = '컴퓨터시스템공학'
+        tool_csv.ttt("2024 학위수여식 학위복 대여_컴퓨터시스템공학", current_time, mylist[:2])
+    else:
+        category = "컴퓨터시스템"
+
+    tool_csv.ttt("2024 학위수여식 학위복 대여자 명단", current_time, )
+
+
+@app.get("/admin/rental")
+def rental_(request: Request):
+    return templates.TemplateResponse("./admin_page/rental.html",{"request":request})
+
+@app.get("/admin/return")
+def return_(request: Request):
+    return templates.TemplateResponse("./admin_page/return.html",{"request":request})
+
+
+
+
 
 
 @app.post("/admin")  # QR코드 내의 AES 암호화된 문자열을 담은 POST 요청이 오면 //아직 사용안함
