@@ -171,6 +171,9 @@ def rental_(request: Request, response: Response, data: str = "0"):
 def users_(data: str = "0"):
     return users
 
+@app.get("/admin/airmore")
+def airmore_(data: str = "0"):
+    airmore_service = tool_sms.init()
 
 # @app.get("/admin/")
 # def password(data: str = "0"):
