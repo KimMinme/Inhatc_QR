@@ -35,6 +35,6 @@ def send(service, phone_number, name, url):
     
 if __name__ == "__main__":
     service = init()
-    phone_number = "01027075860"
+    phone_number = "01012345678"
     url = "http://jwjung.kro.kr/qr/show/?data=w08oaDZTs530oTtvmf1cug=="
     print(send(service, phone_number, url))
